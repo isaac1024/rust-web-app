@@ -1,0 +1,15 @@
+POST http://localhost:8000/courses
+Accept: application/json
+Content-Type: application/json
+
+{
+  "id": "36ea8489-0e01-4034-a692-dcccdfe73d63",
+  "title": "Mi titulo"
+}
+
+###
+
+GET http://localhost:8000/health-check
+Accept: application/json
+
+###
