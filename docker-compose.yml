@@ -5,6 +5,8 @@ services:
     build:
       context: docker/rust
       dockerfile: Dockerfile
+    depends_on:
+      - db
     ports:
       - ${MOOC_API_PORT}:${MOOC_API_PORT}
     env_file:
