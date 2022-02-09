@@ -1,8 +1,6 @@
-use actix_web::{HttpResponse, post, Responder, Result, web};
 use uuid::Uuid;
 use chrono::{DateTime, Utc};
-use sqlx::{Execute, PgPool};
-use serde::Deserialize;
+use sqlx::{PgPool, Result};
 
 const DATABASE_URL: &str = env!("DATABASE_URL");
 
@@ -13,20 +11,7 @@ pub struct Course {
     pub updated_at: DateTime<Utc>
 }
 
-#[derive(Deserialize)]
-struct CourseRequest {
-    id: String,
-    title: String,
-}
-
-#[post("/courses")]
-pub async fn create_course(course_reques: web::Json<CourseRequest>) -> impl Responder {
-    create_course_service(&course_reques.id, &course_reques.title).await;
-
-    HttpResponse::Created()
-}
-
-async fn create_course_service(id: &String, title: &String) {
+pub async fn create_course_service(id: &String, title: &String) {
     let repository = SqlxCourseRepository::new()
         .await
         .expect("Failed load course repository");
@@ -56,11 +41,11 @@ impl SqlxCourseRepository {
         sqlx::query(
             "INSERT INTO courses (uuid, title, created_at, updated_at) VALUES ($1, $2, $3, $4)"
         )
-            .bind(course.id)
-            .bind(course.title)
-            .bind(course.created_at)
-            .bind(course.updated_at)
-            .execute(&self.pool)
-            .await;
+        .bind(course.id)
+        .bind(course.title)
+        .bind(course.created_at)
+        .bind(course.updated_at)
+        .execute(&self.pool)
+        .await;
     }
 }

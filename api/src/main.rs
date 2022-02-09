@@ -1,8 +1,7 @@
 use actix_cors::Cors;
-use actix_web::{App, HttpResponse, HttpServer, web};
-use crate::course::create_course;
-
-mod course;
+use actix_web::{App, HttpResponse, post, HttpServer, Responder, web};
+use serde::Deserialize;
+use mooc_context::create_course_service;
 
 const MOOC_API_IP: &str = env!("MOOC_API_IP");
 const MOOC_API_PORT: &str = env!("MOOC_API_PORT");
@@ -27,4 +26,17 @@ async fn main() -> std::io::Result<()> {
     .unwrap_or_else(|_| panic!("🔥 Couldn't start the server at {}", get_address()))
     .run()
     .await
+}
+
+#[derive(Deserialize)]
+struct CourseRequest {
+    id: String,
+    title: String,
+}
+
+#[post("/courses")]
+async fn create_course(course_reques: web::Json<CourseRequest>) -> impl Responder {
+    create_course_service(&course_reques.id, &course_reques.title).await;
+
+    HttpResponse::Created()
 }
