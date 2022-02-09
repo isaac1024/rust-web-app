@@ -1,4 +1,5 @@
-use sqlx::{PgPool, Result};
+use std::error::Error;
+use sqlx::PgPool;
 use async_trait::async_trait;
 use crate::courses::{Course, CourseRepository};
 
@@ -9,10 +10,9 @@ pub struct PostgresCourseRepository {
 }
 
 impl PostgresCourseRepository {
-    pub async fn new() -> Result<Self> {
+    pub async fn new() -> Result<Self, Box<dyn Error>> {
         let pool = PgPool::connect(DATABASE_URL)
-            .await
-            .expect("Error to connect to database");
+            .await?;
 
         Ok(Self {pool})
     }
@@ -20,7 +20,7 @@ impl PostgresCourseRepository {
 
 #[async_trait]
 impl CourseRepository for PostgresCourseRepository {
-    async fn create_course(&self, course: Course) {
+    async fn create_course(&self, course: Course) -> Result<(), Box<dyn Error>> {
         sqlx::query(
                 r#"
                 INSERT INTO courses
@@ -33,6 +33,8 @@ impl CourseRepository for PostgresCourseRepository {
             .bind(course.created_at)
             .bind(course.updated_at)
             .execute(&self.pool)
-            .await;
+            .await?;
+
+        Ok(())
     }
 }

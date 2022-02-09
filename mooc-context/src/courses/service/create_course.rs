@@ -1,3 +1,4 @@
+use std::error::Error;
 use chrono::Utc;
 use uuid::Uuid;
 use crate::courses::{Course, CourseRepository};
@@ -11,12 +12,14 @@ impl<R: CourseRepository> CreateCourse<R> {
         Self { repository }
     }
 
-    pub(crate) async fn execute(&self, id: &String, title: &String) {
-        let uuid = Uuid::parse_str(id).expect("Failed parse uuid");
+    pub(crate) async fn execute(&self, id: &String, title: &String) -> Result<(), Box<dyn Error>> {
+        let uuid = Uuid::parse_str(id)?;
         let now = Utc::now();
 
         let course = Course {id: uuid, title: title.to_string(), created_at: now, updated_at: now};
 
-        self.repository.create_course(course).await;
+        self.repository.create_course(course).await?;
+
+        Ok(())
     }
 }
