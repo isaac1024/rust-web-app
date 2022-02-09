@@ -332,8 +332,6 @@ dependencies = [
  "actix-rt",
  "actix-web",
  "mooc-context",
- "serde",
- "serde_json",
 ]
 
 [[package]]

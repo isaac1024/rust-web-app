@@ -1,7 +1,9 @@
 use actix_cors::Cors;
 use actix_web::{App, HttpResponse, post, HttpServer, Responder, web};
-use serde::Deserialize;
-use mooc_context::create_course_service;
+use mooc_context::courses::controller::CreateCourse as CreateCourseController;
+use mooc_context::courses::controller::CourseRequest;
+use mooc_context::courses::repository::PostgresCourseRepository;
+use mooc_context::courses::service::CreateCourse as CreateCourseService;
 
 const MOOC_API_IP: &str = env!("MOOC_API_IP");
 const MOOC_API_PORT: &str = env!("MOOC_API_PORT");
@@ -28,15 +30,13 @@ async fn main() -> std::io::Result<()> {
     .await
 }
 
-#[derive(Deserialize)]
-struct CourseRequest {
-    id: String,
-    title: String,
-}
-
 #[post("/courses")]
 async fn create_course(course_reques: web::Json<CourseRequest>) -> impl Responder {
-    create_course_service(&course_reques.id, &course_reques.title).await;
+    let repository = PostgresCourseRepository::new().await.expect("Error");
+    let service = CreateCourseService::new(repository);
+    let controller = CreateCourseController::new(service);
+
+    controller.execute(&course_reques).await;
 
     HttpResponse::Created()
 }
